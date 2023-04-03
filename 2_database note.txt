@@ -1,0 +1,504 @@
+use选中某个数据库进行操作
+create databases; 创建数据库
+show *** 显示某个子类的信息
+
+      先选择数据库再操作，否则报错；
+
+describe pet 用于查看数据表的详情；(简写：desc pet)
+
+查看表中的记录：select.....
+                select * from pet;
+
+添加数据记录：insert into pet
+              values('','','','','','');
+
+create table yyu(
+     number tinyint
+);                            //创建表
+
+数据类型：整形 日期型 字符型   （日期按照日期格式选择，其他根据大小来）
+
+删除数据：delete from pet where name='Marry';
+修改数据：update pet set name='Marry' where 
+
+数据增删改查：insert delete update select
+
+///////////////////////////////////////////////////////////////////////////
+
+
+建表约束：主键约束，外键约束，唯一约束，非空约束，默认约束
+
+主键约束：能够唯一确定一张表中得一条记录，也就是我们通过给某个字段添加约束，就可以使得该字段不重复且不为空。
+
+      create table user(
+	   id int primary key,
+  	   name varchar(20)
+      );    //让这一字段不重复且不能为空，所以insert into user values(NULL,'张三');不成立。
+联合主键：primary key(id,name) //只要两个加起来不重复就OK，任何一个字段也不能为空
+
+自增约束：create table user3(
+	   id int primary key auto_auto_increment,
+  	   name varchar(20)
+          );
+
+          insert into user3 (name) values('ZhangSan'); 
+         主键约束搭配自增约束使用，会自动赋给id值，管控ID的值，让它自动增长。
+
+创建表的时候，忘记创建主键约束时: alter table user4 add primary key(id);
+删除主键约束：alter table user3 drop primary key;
+修改主键约束：alter table user4 modify id int primary key;  //使用MODIFY修改字段，添加约束
+
+唯一约束：要约束修饰的字段的值不可以重复
+
+      create table user5(
+         id int,
+         name varchar(20)
+     );
+     alter table user5 add unique(name);   //添加唯一约束，name不可以重复
+
+    或create table user6(
+         id int,
+         name varchar(20)
+         unique(name)
+     );
+    或create table user5(
+         id int unique,
+         name varchar(20)
+     );
+   其中 unique(id,name)功能相当于联合主键，两个加起来不重复就OK
+
+删除唯一约束：alter table user6 drop index name;
+
+非空约束：修饰的字段不能为空
+
+      create table user9(
+         id int not null,
+         name varchar(20)
+     );
+
+默认约束：当我们插入字段值得时候，如果没有传值，就会使用默认值
+
+create table user10(
+         id int,
+         name varchar(20),
+         age int default 10
+     );
+
+外键约束：涉及到两个表：主表和副表
+
+主表中没有的数据值，再副表中时不可以使用的。主表中得记录被副表引用，时不可以被删除的。
+
+班级：create table classes(
+      id int primary key,
+      name varchar(20)
+     );
+学生：create table students(
+      id int primary key,
+      name varchar(20),
+      class_id int,
+      foreign key(class_id) references classes(id)
+     );
+
+格式：foreign key(class_id) references classes(id)
+
+/////////////////////////////////////////////////////////////
+
+查询表中几列记录：
+select sname,ssex,class from student
+;
+查询教师所有单位及重复的depart列：
+select distinct depart from teacher;（distinct排除重复）
+
+查询成绩在60-80之间的所有记录：
+select * from score where degree between 60 and 80;
+select * from score where degree>60 and degree<80;（运算符比较）
+
+查询成绩为85、86或88的所有记录
+（或者关系查询）（用IN表示或者）
+select * from score where dgree in(85,86,88);
+
+查询950318或性别为女的同学记录：（OR表示或者）
+select * from student where class='95031' or ssex='女'；
+
+
+以class降序查询表的所有记录：(升序;asc  降序：desc)
+select * from student order by class desc;
+
+
+以CNO升序，DEGREE降序查询所有记录
+select * from score order by cno asc, dgree desc;
+（在相同CNO下，DESC降序）
+
+查询95031班的人数（count）
+select count(*) from student where class='95031';
+
+成绩表中最高分学生学号和课程号
+select sno,cno from score where dgree=(select max(dgree) from score);(子程序)
+
+（排序法）select sno,cno from score order by dgree desc limit 0,1;
+   limit 0,1 从0开始查1位               limit 0,2  从0开始查2位
+
+查询每门课的平均成绩：
+select avg(dgree) from score where cno='3-105'; 计算3-105课程的平均成绩
+在一个SQL语句中写：select cno,avg(agree) from score group by cno;
+     group by分组，把CNO分组进行计算
+
+查询score表中至少2名学生选修的并以3开头的平均分数
+
+select cno,avg(dgree) from score group by cno having count(cno)>=2 and cno like '3%'; 
+
+查询分数大于70小于90的sno列：
+方法：where 和 between and
+（select sno from score where dgree between 70 and 90;）
+
+查询所有学生的sname ,cno, dgree
+select sname,cno,dgree from student,score
+where student.sno=score.sno;
+
+查询所有学生的sno,cname,dgree
+
+查询所有学生的sname,cname,dgree
+select sname,sname,dgree from student,course,score
+where student.sno=score.sno and course.cno=score.cno;
+
+给列取别名：select sname as pig from student;(as 接新名字)
+
+查询95031班学生每门的平均分
+select cno,avg(dgree) from score where sno in 
+(select sno from student where class='95031') group by cno; 
+
+查询选修3-105课程的成绩高于109号同学3-105成绩的所有同学记录
+
+select * from score where sno='109' and cno='3-105';//109同学成绩
+
+select * from score where dgree>(select dgree from score where sno='109' and cno='3-105');
+//大于109同学的成绩
+
+select * from student where sno in 
+(select sno from score where cno='3-105' and dgree>
+(select dgree from score where sno='109' and cno='3-105')
+);  //最终结果
+
+查询成绩高于学号为109，课程号为3-105成绩的所有记录
+
+select * from score where sno='109' and cno='3-105';//109号同学3-105课程成绩
+
+select * from score where dgree>
+(select dgree from score where sno='109' and cno='3-105');
+
+查询和学号108 ，101的同学同年出生的所有学生的SNO,SNAME, SBIRTHDAY  //in代表或的意思
+select year(sbirthday) from student where sno in (108,101);// 提取108,101的出生年份
+
+select * from student where year(sbirthday) in (select year(sbirthday) from student where sno in (108,101));
+
+查询李嘉诚教师任课的学生成绩
+
+select * from course where tno in 
+(select tno from teacher where tname='李嘉诚');
+//找到李嘉诚老师教的课
+
+select tno from teacher where tname='李嘉诚'；//找到李嘉诚老师的教师编号
+
+select sno,dgree from score where cno in 
+(select cno from course where tno in 
+(select tno from teacher where tname='李嘉诚'));//最终结果
+
+查询选修某课程的同学人数多于5人的教师姓名
+
+select cno from score group by cno having count(*)>5;//被选五次的课程
+
+select tno from course where cno in
+(select cno from score group by cno having count(*)>5);//被选5次课的教师编号
+
+select tname from teacher where tno in
+(select tno from course where cno in
+(select cno from score group by cno having count(*)>5)
+);//最终结果，出姓名
+
+查询95033和95031全体学生的记录：（用in或者用OR ）
+
+查询存在有85以上的成绩的课程cno：
+
+查询计算机系所有教师所有课程的成绩表：
+select * from score where cno in(
+select cno from course where tno in
+(select tno from teacher where depart='计算机系')
+);
+
+查询计算机系与电子工程系不同职称教师的TNAME和TPROF（union的用法）
+union 求并集
+
+select * from teacher where depart='计算机系' and prof not in(
+select prof from teacher where depart='电子工程系');//筛掉计算机系中和电子工程系相同的职称
+
+select prof from teacher where depart='电子工程系';//提取电子工程系里的职称
+
+select * from teacher where depart='计算机系' and prof not in(
+select prof from teacher where depart='电子工程系')
+union
+select * from teacher where depart='电子工程系' and prof not in(
+select prof from teacher where depart='计算机系');//最终结果
+
+
+查询选修编号为3-105课程且成绩至少高于选修编号为3-245的同学的CNO,SNO,DGREE，
+并按照DGREE从高到低次序排列：(any)  any表示任意一个
+
+select * from score where cno='3-105' and dgree>any(
+select dgree from score where cno='3-245') 
+order by dgree desc;
+
+查询选修编号为3-105且成绩高于选修编号为3-245的同学的CNO,SNO,DGREE  //all表示所有
+
+select cno,sno,dgree from score where cno='3-105' and dgree>all(
+select dgree from score where cno='3-245');
+
+查询所有教师和同学的name,sex,birthday
+
+select tname as name,tsex as sex,tbirthday as birthday from teacher
+union
+select sname,ssex,sbirthday from student;
+
+查询所有女教师和女同学的name,sex,birthday
+
+select tname as name,tsex as sex,tbirthday as birthday from teacher where tsex='女'
+union
+select sname,ssex,sbirthday from student where ssex='女';
+
+查询成绩比该课程平均成绩低的同学的成绩表
+
+select * from score a where dgree<(
+select avg(dgree) from score b where a.cno=b.cno);
+
+查询所有任课教师的tname和depart
+
+select * from teacher where tno in (
+select tno from course);
+
+查询至少有两名男生的班号
+
+select class from student group by class having count(ssex='男')>1;
+或select class from student where ssex='男' group by class having count(*)>1;
+
+查询student表中不姓黄的同学记录
+select * from student where sname not like '黄%';
+
+查询student表中每个学生的姓名和年龄
+//年龄=当前年份-出生年份
+
+select year(now());     //当前年份
+select year(sbirthday) from student;  //学生出生年份
+select sname,year(now())-year(sbirthday) as age from student;
+
+查询student中最大和最小的sbirthday日期：
+select max(sbirthday),min(sbirthday) from student;
+
+以班号和年龄从大到小的顺序查询student表中的全部记录
+select *from student order by class desc,sbirthday;
+
+查询男教师及其所上的课程
+select cno,cname from course where tno in
+(select tno from teacher where tsex='男');
+
+查询最高分同学的sno,cno,dgree
+
+select max(dgree) from score; //查询最高分
+select * from score where dgree =(select max(dgree) from score);
+
+查询和黄鱼同性别的所有同学sname
+select sname from student where ssex in 
+(select ssex from student where sname='黄鱼');
+
+查询和黄鱼同性别且同班的同学sname
+
+select sname from student where ssex=(
+select ssex from student where sname='黄鱼') 
+and class=(
+select class from student where sname='黄鱼');
+
+查询所有选修计算机导论课程的男同学的成绩表
+select * from score where cno=
+(select cno from course where cname='计算机导论')
+and sno in (select sno from student where ssex='男'
+);
+ 
+查询所有同学的SNO,CNO,GRADE列
+select sno,cno,grade from score,grade where dgree between low and upp;
+
+//////////////////////////////////////////////////////////////////////
+
+SQL四种链接查询
+
+内连接 
+inner join 或者 join
+外连接 
+1.左链接 left join  或  left outer join
+2.右链接  right join 或  right outer join
+3.完全外连接 full join 或 full outer join
+
+
+inner join查询：(内连查询就是两张表中的数据，通过某个字段相等，查询出相关记录数据。)
+
+select * from person inner join card on person.cardID=card.id;
+或
+select * from person join card on person.cardID=card.id;  （Inner可以删除）
+
+left join查询（左外连接）
+左外连接会把左边表里的所有数据取出来，而右边表中的数据，如果有相等就显示出来，如果没有就会补NULL
+
+select * from person left join card on person.cardID=card.id;
+或select * from person left outer join card on person.cardID=card.id; （补上outer）
+
+right join(右外连接)
+会把右边表里的数据全部取出来，有相等就显示，没有就显示NULL
+
+full join（全外连接）
+select * from person full join card on person.cardID=card.id;
+（mysql不支持全外连接）
+相当于：
+select * from person left join card on person.cardID=card.id
+union
+select * from person right join card on person.cardID=card.id;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+mysql事务
+
+事务是一个最小的不肯分割的工作单元，事务能够保证一个业务的完整性
+如：银行转账
+
+    a -> 100
+
+     updata user set money=money-100 where name='a';
+
+    100 -> b
+
+     updata user set money=money+100 where name='b';
+
+实际的程序中，如果只有一条语句执行成功，而另外一条没有成功，就会出现数据前后不一致。
+
+多条SQL语句可能会有同时完成成功的要求，要么同时成功，要么同时失败。
+
+控制事务：
+
+mysql默认是开启事务的。（select @@autocommit;）（自动提交开启）
+默认开启的作用：当我们去执行一个sql语句的时候，效果会立即提现出来，且不能回滚。
+
+事务回滚：撤销sql语句执行效果   语句：rollback;
+
+可以设置Mysql自动提交为false（关闭了自动提交）
+set autocommit=0;
+在不想回滚的插入操作后，输入一个commit指令，该操作就不能回滚。（手动提交）
+
+
+事务：自动提交、手动提交、事务回滚 
+一旦提交了之后，sql语句就不能撤销。
+
+事务给我们提供了一个反悔的机会
+
+
+当autocommit=1时，
+begin 或者 start transaction； 都可以手动开启一个事务
+
+start transaction;
+update user set money=money-100 where name='a';
+update user set money=money+100 where name='b';    //手动开启事务
+
+另一种情况：
+start transaction;
+update user set money=money-100 where name='a';
+update user set money=money+100 where name='b';  
+commit;                                            //事务开启之后一旦commit就不能回滚
+（也就是这个事务在提交的时候就已经结束了）
+
+事务的四大特征：
+A  原子性：事务时最小的单位，不可以再分割
+C  一致性：事务要求，同一事务中的sql语句,必须保证同时成功或者同时失败
+I  隔离性：事务1 和事务2 之间时具有隔离性的
+D  持久性：事务一旦结束（commit, rollback），就不可返回
+
+事务开启：
+1.修改默认提交 set autocommit=o;
+2.begin
+3.start transaction
+
+事务手动提交：commit
+事务手动回滚：rollback
+
+/////////////////////////////////////////////////////////////////////////////////
+
+事务的隔离性：
+1.read uncommitted;      读未提交的
+2.read committed;        读已经提交的
+3.repeatable read;       可以重复读  （MYSQL默认隔离级别）
+4.serializable;          串行化
+
+1.read uncommitted
+如果有事务a和事务b，
+a事务对数据进行操作，在操作的过程中，事务没有被提交，但是b可以看见a操作的结果
+
+
+insert into user values(3,'小明',1000);
+insert into user values(4,'淘宝店',1000);
+
+如何查看数据库的隔离级别：
+
+MYSQL 8.0:
+select @@global.transaction_isolation;或
+select @@transaction_isolation;
+
+mysql 5.x：
+select @@global.tx_isolation;
+或select @@tx_isolation;
+
+如何修改隔离级别：
+
+set global transaction isolation level read uncommitted;   //修改事务隔离性为 读未提交
+
+--  实例：小明买鞋，给淘宝店转账
+start transaction;
+update user set money=money-800 where name='小明';
+update user set money=money+800 where name='淘宝店';
+//淘宝店读到了小明没有提交的数据
+
+read uncommitted:如果两个不同的地方，都在进行操作，如果事务A开启之后，他的数据可以被其他事务读取到
+这样就会出现 脏读
+脏读：一个事务里读到了另一个事务未提交的数据
+实际开发时不允许脏读出现的
+
+read committed：读已提交的(不可重复读)
+set global transaction isolation level read committed;   //修改隔离级别为 读已提交
+select @@global.transaction_isolation;   //查看隔离级别
+
+
+repeatable read: 可以重复读（幻读）
+事务A操作和事务B同时操作一张表，事务A提交的数据，也不能被事务B读到，就可能造成幻读。
+
+serializable; 串行化
+-- 当user表被另外一个事务操作的时候，其他事务里面的写操作，是不可以进行的。
+-- 进入排队状态（串行化状态），直到另一边事务结束的时候，这边的写入操作才会执行
+-- 在没有等待超时的情况下。
+
+
+-- 串行化带来的问题是：性能特差。
+
+性能比较：READ-UNCOMMITTED > READ_COMMITTED > REPEATABLE-READ > SERIALIZABLE
+
+隔离级别越高，性能越差
+
+mysql默认隔离级别是 REPEATABLE-READ
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
